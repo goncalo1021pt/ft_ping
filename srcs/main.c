@@ -16,8 +16,7 @@ int main(int argc, char **argv)
 		print_help();
 		return 2;
 	}
-	print_options(&options);
-	printf("Ping index starts at: %d\n", ping.index);
-	printf("Ping of %s would be initiated here.\n", argv[ping.index]);
+	// print_options(&options);
+	exec_ping(&ping, &options);
 	return 0;
 }

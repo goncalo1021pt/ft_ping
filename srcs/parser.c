@@ -8,9 +8,9 @@ void initialize_options(t_options *options) {
 
 void print_options(t_options *options) {
 	printf("Options:\n");
-	printf("  Count: %d\n", options->count);
-	printf("  Verbose: %s\n", options->verbose ? "true" : "false");
-	printf("  Help: %s\n", options->help ? "true" : "false");
+	printf("Count: %d\n", options->count);
+	printf("Verbose: %s\n", options->verbose ? "true" : "false");
+	printf("Help: %s\n", options->help ? "true" : "false");
 }
 
 void print_help() {
@@ -52,6 +52,7 @@ int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 		return 1; 
 	}
 	
+	ping->ip_address = argv[optind];
 	ping->index = optind;
 	return 0;
 }
