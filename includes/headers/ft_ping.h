@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <getopt.h>
 #include <signal.h>
 #include <termios.h>
 #include <sys/types.h>
@@ -21,6 +22,7 @@
 typedef struct s_options
 {
 	int count;
+	int interval;
 	bool verbose;
 	bool help;
 }				t_options;
@@ -32,6 +34,7 @@ typedef struct s_ping
 }				t_ping;
 
 extern volatile sig_atomic_t g_ping_running;
+extern volatile sig_atomic_t g_alarm_received;
 
 // parser.c
 void initialize_options(t_options *options);

@@ -1,23 +1,23 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_strlen.c                                        :+:      :+:    :+:   */
+/*   ft_strspn.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: gfontao- <gfontao-@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/09/27 14:02:19 by gfontao-          #+#    #+#             */
-/*   Updated: 2025/10/21 01:51:29 by gfontao-         ###   ########.fr       */
+/*   Created: 2025/10/21 01:47:58 by gfontao-          #+#    #+#             */
+/*   Updated: 2025/10/21 01:53:00 by gfontao-         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "libft.h"
 
-size_t	ft_strlen(const char *str)
+size_t	ft_strspn(const char *s, const char *accept)
 {
 	size_t	ctd;
 
 	ctd = 0;
-	while (str && str[ctd])
+	while (s[ctd] && ft_strchr(accept, s[ctd]))
 		ctd++;
 	return (ctd);
 }

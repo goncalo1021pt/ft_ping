@@ -6,7 +6,7 @@
 /*   By: goncalo1021pt <goncalo1021pt@student.42    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/09/27 14:02:58 by gfontao-          #+#    #+#             */
-/*   Updated: 2025/05/22 12:32:18 by goncalo1021      ###   ########.fr       */
+/*   Updated: 2025/10/21 01:43:21 by goncalo1021      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,6 +103,7 @@ int				ft_fprintf(int fd, const char *str, ...);
 void			*ft_realloc(void *ptr, size_t old_size, size_t new_size);
 char			*ft_strncat(char *dest, const char *src, size_t n);
 int				ft_strcmp(const char *s1, const char *s2);
+size_t			ft_strspn(const char *s, const char *accept);
 int				ft_isupper(int c);
 int				ft_islower(int c);
 

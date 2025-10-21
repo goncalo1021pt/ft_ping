@@ -5,13 +5,18 @@ void print_statistics() {
 }
 
 int start_ping_loop(t_ping *ping, t_options *options) {
-	(void)ping;
-	(void)options;
+	printf("Pinging %s ...\n", ping->ip_address);
 
+	alarm(options->interval);
 	while (g_ping_running) {
-		printf("Pinging %s ...\n", ping->ip_address);
-		sleep(1);
+		pause();
+		if (g_alarm_received && g_ping_running) {
+			g_alarm_received = false;
+			printf("Pinging %s ...\n", ping->ip_address);
+			alarm(options->interval);
+		}
 	}
+	alarm(0);
 	return 0;
 }
 
