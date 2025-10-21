@@ -22,7 +22,7 @@
 typedef struct s_options
 {
 	int count;
-	int interval;
+	float interval;
 	bool verbose;
 	bool help;
 }				t_options;

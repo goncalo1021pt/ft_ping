@@ -1,5 +1,15 @@
 #include "ft_ping.h"
 
+void set_interval_timer(float interval) {
+	struct itimerval timer;
+	
+	timer.it_value.tv_sec = (long)interval;
+	timer.it_value.tv_usec = (long)((interval - (long)interval) * 1000000);
+	timer.it_interval.tv_sec = 0;
+	timer.it_interval.tv_usec = 0;
+	setitimer(ITIMER_REAL, &timer, NULL);
+}
+
 void print_statistics() {
 	printf("Printing ping statistics...\n");
 }
@@ -7,16 +17,16 @@ void print_statistics() {
 int start_ping_loop(t_ping *ping, t_options *options) {
 	printf("Pinging %s ...\n", ping->ip_address);
 
-	alarm(options->interval);
+	set_interval_timer(options->interval);
 	while (g_ping_running) {
 		pause();
 		if (g_alarm_received && g_ping_running) {
 			g_alarm_received = false;
 			printf("Pinging %s ...\n", ping->ip_address);
-			alarm(options->interval);
+			set_interval_timer(options->interval);
 		}
 	}
-	alarm(0);
+	set_interval_timer(0);
 	return 0;
 }
 
