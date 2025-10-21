@@ -8,7 +8,7 @@ SRCS =	ft_isalpha.c ft_isdigit.c ft_isalnum.c ft_isascii.c ft_isprint.c ft_strle
 		ft_lstdelone.c ft_lstiter.c ft_lstadd_back.c ft_lstclear.c ft_lstmap.c \
 		get_next_line.c	get_next_line_utils.c atoi_long.c ft_strcpy.c ft_strncpy.c \
 		ft_fprintf.c ft_fprintf_aux.c ft_realloc.c ft_strncat.c ft_strcmp.c \
-		ft_isupper.c ft_islower.c ft_strspn.c \
+		ft_isupper.c ft_islower.c ft_strspn.c ft_is_valid_decimal.c \
 
 NAME = libft.a
 
