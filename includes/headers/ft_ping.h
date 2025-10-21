@@ -16,6 +16,7 @@
 #include <netinet/in.h>
 #include "../libft/libft.h"
 
+#define _GNU_SOURCE
 #define ERROR -1
 #define SUCCESS 0
 
@@ -35,6 +36,7 @@ typedef struct s_ping
 
 extern volatile sig_atomic_t g_ping_running;
 extern volatile sig_atomic_t g_alarm_received;
+extern volatile sig_atomic_t g_statistics_requested;
 
 // parser.c
 void initialize_options(t_options *options);

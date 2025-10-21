@@ -2,6 +2,7 @@
 
 volatile sig_atomic_t g_ping_running = true;
 volatile sig_atomic_t g_alarm_received = false;
+volatile sig_atomic_t g_statistics_requested = false;
 
 void signal_handler(int signal, siginfo_t *info, void *context)
 {
@@ -14,7 +15,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	}
 	else if (signal == SIGQUIT)
 	{
-		print_statistics();
+		g_statistics_requested = true;
 	}
 	else if (signal == SIGALRM)	
 	{

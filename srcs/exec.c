@@ -11,7 +11,7 @@ void set_interval_timer(float interval) {
 }
 
 void print_statistics() {
-	printf("Printing ping statistics...\n");
+	printf("Printing ft_ping statistics...\n");
 }
 
 int start_ping_loop(t_ping *ping, t_options *options) {
@@ -24,6 +24,9 @@ int start_ping_loop(t_ping *ping, t_options *options) {
 			g_alarm_received = false;
 			printf("Pinging %s ...\n", ping->ip_address);
 			set_interval_timer(options->interval);
+		} else if (g_statistics_requested) {
+			g_statistics_requested = false;
+			print_statistics();
 		}
 	}
 	set_interval_timer(0);
@@ -43,7 +46,7 @@ int setup_ping(t_ping *ping, t_options *options) {
 int cleanup_ping(t_ping *ping, t_options *options) {
 	(void)options;
 	(void)ping;
-	printf("--- %s ping statistics ---\n", ping->ip_address);
+	printf("--- %s ft_ping statistics ---\n", ping->ip_address);
 	termios_change(true);
 	
 	return 0;
