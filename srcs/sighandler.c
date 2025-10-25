@@ -32,8 +32,8 @@ void set_signal()
 	if (sigemptyset(&sa.sa_mask) != 0)
 		return ;
 	
-	if (sigaction(SIGINT, &sa, NULL) == -1)
-		perror("sigaction SIGINT");
+	// if (sigaction(SIGINT, &sa, NULL) == -1)
+	// 	perror("sigaction SIGINT");
 	if (sigaction(SIGQUIT, &sa, NULL) == -1)
 		perror("sigaction SIGQUIT");
     if (sigaction(SIGALRM, &sa, NULL) == -1)

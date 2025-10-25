@@ -78,6 +78,10 @@ void print_help() {
 int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 	int opt;
 	
+	if (argc < 2) {
+		fprintf(stderr, "ft_ping: usage error: Destination address required\n");
+		return 1; 
+	}
 	while ((opt = getopt(argc, argv, "c:i:hvfl:np:rs:t:w:W:T:")) != -1) {
 		switch (opt) {
 			case 'c':

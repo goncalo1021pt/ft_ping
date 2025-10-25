@@ -42,7 +42,6 @@ int start_ping_loop(t_ping *ping, t_options *options) {
 		if (g_alarm_received && g_ping_running) {
 			g_alarm_received = false;
 			resolve_packet(ping, options);
-			printf("Pinging %s ...\n", ping->ip_address);
 			set_interval_timer(options->interval);
 		} else if (g_statistics_requested) {
 			g_statistics_requested = false;
@@ -59,6 +58,7 @@ int cleanup_ping(t_ping *ping, t_options *options) {
 	printf("--- %s ft_ping statistics ---\n", ping->ip_address);
 	close_ping_socket(ping->sockfd);
 	termios_change(true);
+	
 	return 0;
 }
 

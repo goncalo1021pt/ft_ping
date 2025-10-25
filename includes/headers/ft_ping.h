@@ -20,7 +20,6 @@
 #include <errno.h>
 #include "../libft/libft.h"
 
-#define _GNU_SOURCE
 #define ERROR -1
 #define SUCCESS 0
 

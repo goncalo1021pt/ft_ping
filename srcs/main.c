@@ -16,7 +16,6 @@ int main(int argc, char **argv)
 			print_help();
 		return 2;
 	}
-	print_options(&options);
-	return 0;
-	// return exec_ping(&ping, &options);
+	// print_options(&options);
+	return exec_ping(&ping, &options);
 }
