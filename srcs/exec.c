@@ -32,7 +32,6 @@ int setup_ping(t_ping *ping, t_options *options) {
 	if (ping->sockfd < 0)
 		return -1; 
 	
-	g_alarm_received = true;
 	return 0;
 }
 
@@ -74,11 +73,25 @@ void print_statistics(t_ping *ping) {
 	}
 }
 
-int start_ping_loop(t_ping *ping, t_options *options) {
+static void setup_poll_socket(struct pollfd *fds, int sockfd) {
+	fds[0].fd = sockfd;
+	fds[0].events = POLLIN;
+}
 
+int start_ping_loop(t_ping *ping, t_options *options) {
+	resolve_packet(ping, options);
 	set_interval_timer(options->interval);
 	
-	while (g_ping_running) {
+	struct pollfd fds[1];
+	setup_poll_socket(fds, ping->sockfd);
+	
+	while (g_ping_running && (options->count == -1 || ping->stats.packets_sent < options->count)) {
+		int poll_result = poll(fds, 1, 100);
+		
+		if (poll_result > 0 && (fds[0].revents & POLLIN)) {
+			t_ping_packet packet;
+			recv_packet(ping, &packet);
+		}
 		if (g_alarm_received && g_ping_running) {
 			g_alarm_received = false;
 			resolve_packet(ping, options);
@@ -87,8 +100,8 @@ int start_ping_loop(t_ping *ping, t_options *options) {
 			g_statistics_requested = false;
 			print_statistics(ping);
 		}
-		pause();
 	}
+	
 	set_interval_timer(0);
 	return 0;
 }

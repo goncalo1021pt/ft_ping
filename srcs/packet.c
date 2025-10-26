@@ -72,14 +72,15 @@ void recv_packet(t_ping *ping, t_ping_packet *packet) {
 		printf("ft_ping: packet too small for IP header (%zd bytes)\n", bytes_received);
 		return;
 	}
+
 	struct iphdr *ip_header = (struct iphdr *)buf;
 	int ip_header_len = ip_header->ihl * 4;
-
 	if (bytes_received < ip_header_len + (int)sizeof(t_icmp_header)) {
 		printf("ft_ping: packet too small for ICMP header (%zd bytes, need %d)\n", 
 		       bytes_received, ip_header_len + (int)sizeof(t_icmp_header));
 		return;
 	}
+
 	t_icmp_header *icmp_header = (t_icmp_header *)(buf + ip_header_len);
 	if (icmp_header->type != ICMP_ECHOREPLY) {
 		printf("ft_ping: received ICMP type %d (not echo reply)\n", icmp_header->type);
@@ -98,7 +99,6 @@ void recv_packet(t_ping *ping, t_ping_packet *packet) {
 		struct timeval now;
 		gettimeofday(&now, NULL);
 		double rtt = (now.tv_sec - sent_time->tv_sec) * 1000.0 + (now.tv_usec - sent_time->tv_usec) / 1000.0;
-
 		ping->stats.total_rtt += rtt;
 		if (rtt < ping->stats.min_rtt)
 			ping->stats.min_rtt = rtt;
@@ -117,10 +117,6 @@ void resolve_packet(t_ping *ping, t_options *options) {
 	(void)options;
 	t_ping_packet packet;
 
-	/* First try to receive any pending replies (non-blocking) */
-	recv_packet(ping, &packet);
-	
-	/* Then send the next packet */
 	create_icmp_packet(&packet, ping->identifier, ping->sequence);
 	ping->sequence++;
 	send_packet(ping, &packet);
