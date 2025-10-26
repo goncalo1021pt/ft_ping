@@ -18,6 +18,7 @@
 #include <arpa/inet.h>
 #include <netdb.h>
 #include <errno.h>
+#include <fcntl.h>
 #include "../libft/libft.h"
 
 #define ERROR -1
@@ -106,7 +107,7 @@ void debug_packet(t_ping_packet *packet);
 void resolve_packet(t_ping *ping, t_options *options);
 
 // socket.c
-int create_icmp_socket();
+int create_icmp_socket(float interval, int timeout);
 void close_ping_socket(int sockfd);
 int resolve_address(t_ping *ping);
 

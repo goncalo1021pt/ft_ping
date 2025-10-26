@@ -1,8 +1,8 @@
 #include "ft_ping.h"
 
-int create_icmp_socket() {
+int create_icmp_socket(float interval, int timeout) {
 	int sockfd;
-	
+
 	sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sockfd < 0) {
 		if (errno == EPERM || errno == EACCES) {
@@ -15,11 +15,30 @@ int create_icmp_socket() {
 		return -1;
 	}
 
-	struct timeval tv = {1, 0};
+	int timeout_sec = 0;
+	int timeout_usec = 0;
+	if (timeout > 0) {
+		timeout_sec = timeout;
+		timeout_usec = 0;
+	} else {
+		timeout_sec = (int)interval;
+		timeout_usec = (int)((interval - timeout_sec) * 1000000);
+		timeout_usec += 200000;
+		if (timeout_usec >= 1000000) {
+			timeout_sec += timeout_usec / 1000000;
+			timeout_usec = timeout_usec % 1000000;
+		}
+	}
+
+	int flags = fcntl(sockfd, F_GETFL, 0);
+	if (flags != -1) {
+		fcntl(sockfd, F_SETFL, flags | O_NONBLOCK);
+	}
+
+	struct timeval tv = {timeout_sec, timeout_usec};
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == -1) {
 		perror("ft_ping: setsockopt SO_RCVTIMEO");
 	}
-
 	int rcvbuf = 64 * 1024;
 	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)) == -1) {
 		perror("ft_ping: setsockopt SO_RCVBUF");

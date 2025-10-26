@@ -52,17 +52,19 @@ void recv_packet(t_ping *ping, t_ping_packet *packet) {
 	unsigned char buf[1024];
 	socklen_t addr_len = sizeof(src_addr);
 
-	do {
-		addr_len = sizeof(src_addr);
-		bytes_received = recvfrom(ping->sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&src_addr, &addr_len);
-	} while (bytes_received < 0 && errno == EINTR);
-
+	addr_len = sizeof(src_addr);
+	bytes_received = recvfrom(ping->sockfd, buf, sizeof(buf), 0, (struct sockaddr*)&src_addr, &addr_len);
+	
 	if (bytes_received < 0) {
 		if (errno == EAGAIN || errno == EWOULDBLOCK) {
-			printf("Request timed out.\n");
 			return;
 		}
-		perror("ft_ping: recvfrom failed");
+		if (errno == EINTR && g_statistics_requested) {
+			return;
+		}
+		if (errno != EINTR) {
+			perror("ft_ping: recvfrom failed");
+		}
 		return;
 	}
 
@@ -115,10 +117,13 @@ void resolve_packet(t_ping *ping, t_options *options) {
 	(void)options;
 	t_ping_packet packet;
 
+	/* First try to receive any pending replies (non-blocking) */
+	recv_packet(ping, &packet);
+	
+	/* Then send the next packet */
 	create_icmp_packet(&packet, ping->identifier, ping->sequence);
 	ping->sequence++;
 	send_packet(ping, &packet);
-	recv_packet(ping, &packet);
 }
 
 void debug_packet(t_ping_packet *packet) {

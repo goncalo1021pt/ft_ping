@@ -11,7 +11,6 @@ void set_interval_timer(float interval) {
 }
 
 int setup_ping(t_ping *ping, t_options *options) {
-	(void)options;
 
 	set_signal();
 	termios_change(false);
@@ -29,7 +28,7 @@ int setup_ping(t_ping *ping, t_options *options) {
 	if (resolve_address(ping) < 0) 
 		return -1;
 	
-	ping->sockfd = create_icmp_socket();
+	ping->sockfd = create_icmp_socket(options->interval, options->timeout);
 	if (ping->sockfd < 0)
 		return -1; 
 	
