@@ -14,6 +14,16 @@ int create_icmp_socket() {
 		}
 		return -1;
 	}
+
+	struct timeval tv = {1, 0};
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv)) == -1) {
+		perror("ft_ping: setsockopt SO_RCVTIMEO");
+	}
+
+	int rcvbuf = 64 * 1024;
+	if (setsockopt(sockfd, SOL_SOCKET, SO_RCVBUF, &rcvbuf, sizeof(rcvbuf)) == -1) {
+		perror("ft_ping: setsockopt SO_RCVBUF");
+	}
 	
 	return sockfd;
 }
@@ -32,7 +42,7 @@ int resolve_address(t_ping *ping) {
 	
 	if (inet_aton(ping->ip_address, &ping->dest_addr.sin_addr) != 0) {
 		ping->hostname = ping->ip_address;
-		printf("PING %s (%s)\n", ping->hostname, ping->ip_address);
+		printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, ping->ip_address, DATA_SIZE, PACKET_SIZE + 20);
 		return 0;
 	} else {
 		host_entry = gethostbyname(ping->ip_address);
@@ -42,7 +52,7 @@ int resolve_address(t_ping *ping) {
 		}
 		memcpy(&ping->dest_addr.sin_addr, host_entry->h_addr_list[0], host_entry->h_length);
 		ping->hostname = ping->ip_address;
-		printf("PING %s (%s)\n", ping->hostname, inet_ntoa(ping->dest_addr.sin_addr));
+		printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, inet_ntoa(ping->dest_addr.sin_addr), DATA_SIZE, PACKET_SIZE + 20);
 		return 0;
 	}
 }

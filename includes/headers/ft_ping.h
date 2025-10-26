@@ -50,6 +50,8 @@ typedef struct s_ping_stats
 	double min_rtt;
 	double max_rtt;
 	double total_rtt;
+	struct timeval start_time;
+	struct timeval end_time;
 } t_ping_stats;
 
 typedef struct s_options
