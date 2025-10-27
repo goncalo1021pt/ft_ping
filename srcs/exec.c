@@ -78,6 +78,20 @@ static void setup_poll_socket(struct pollfd *fds, int sockfd) {
 	fds[0].events = POLLIN;
 }
 
+int check_running(t_ping *ping, t_options *options)
+{
+	if ((options->count != -1 && ping->stats.packets_received >= options->count))
+		return 0;
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	long elapsed_sec = now.tv_sec - ping->stats.start_time.tv_sec;
+	if (options->deadline > 0 && elapsed_sec >= options->deadline)
+		return 0;
+	if (!g_ping_running)
+		return 0;
+	return 1;
+}
+
 int start_ping_loop(t_ping *ping, t_options *options) {
 	resolve_packet(ping, options);
 	set_interval_timer(options->interval);
@@ -85,7 +99,7 @@ int start_ping_loop(t_ping *ping, t_options *options) {
 	struct pollfd fds[1];
 	setup_poll_socket(fds, ping->sockfd);
 	
-	while (g_ping_running && (options->count == -1 || ping->stats.packets_sent < options->count)) {
+	while (check_running(ping, options)) {
 		int poll_result = poll(fds, 1, 100);
 		
 		if (poll_result > 0 && (fds[0].revents & POLLIN)) {
