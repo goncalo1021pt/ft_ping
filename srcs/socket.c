@@ -1,6 +1,6 @@
 #include "ft_ping.h"
 
-int create_icmp_socket(float interval, int timeout) {
+int create_icmp_socket(float interval, int timeout, int ttl) {
 	int sockfd;
 
 	sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -12,6 +12,12 @@ int create_icmp_socket(float interval, int timeout) {
 		} else {
 			perror("ft_ping: socket creation failed");
 		}
+		return -1;
+	}
+
+	if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) == -1) {
+		perror("ft_ping: setsockopt IP_TTL");
+		close(sockfd);
 		return -1;
 	}
 
@@ -53,8 +59,9 @@ void close_ping_socket(int sockfd) {
 	}
 }
 
-int resolve_address(t_ping *ping) {
-	struct hostent *host_entry;
+int resolve_address(t_ping *ping, t_options *options) {
+	struct addrinfo hints, *result;
+	int status;
 	
 	memset(&ping->dest_addr, 0, sizeof(ping->dest_addr));
 	ping->dest_addr.sin_family = AF_INET;
@@ -62,16 +69,22 @@ int resolve_address(t_ping *ping) {
 	if (inet_aton(ping->ip_address, &ping->dest_addr.sin_addr) != 0) {
 		ping->hostname = ping->ip_address;
 		printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, ping->ip_address, DATA_SIZE, PACKET_SIZE + 20);
-		return 0;
-	} else {
-		host_entry = gethostbyname(ping->ip_address);
-		if (host_entry == NULL) {
-			fprintf(stderr, "ft_ping: %s: Name or service not known\n", ping->ip_address);
-			return -1;
-		}
-		memcpy(&ping->dest_addr.sin_addr, host_entry->h_addr_list[0], host_entry->h_length);
-		ping->hostname = ping->ip_address;
-		printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, inet_ntoa(ping->dest_addr.sin_addr), DATA_SIZE, PACKET_SIZE + 20);
+		options->numeric = true;
 		return 0;
 	}
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_INET;
+	hints.ai_socktype = SOCK_RAW;
+	hints.ai_protocol = IPPROTO_ICMP;
+	status = getaddrinfo(ping->ip_address, NULL, &hints, &result);
+	if (status != 0) {
+		fprintf(stderr, "ft_ping: %s: %s\n", ping->ip_address, gai_strerror(status));
+		return -1;
+	}
+	struct sockaddr_in *addr_in = (struct sockaddr_in *)result->ai_addr;
+	memcpy(&ping->dest_addr.sin_addr, &addr_in->sin_addr, sizeof(ping->dest_addr.sin_addr));
+	ping->hostname = ping->ip_address;
+	printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, inet_ntoa(ping->dest_addr.sin_addr), DATA_SIZE, PACKET_SIZE + 20);
+	freeaddrinfo(result);
+	return 0;
 }

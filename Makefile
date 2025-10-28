@@ -10,7 +10,7 @@ HDRS = $(wildcard includes/headers/*.h)
 RM = rm -f
 CFLAGS = -Wall -Wextra -Werror -g
 SFLAGS = -fsanitize=address
-VFLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes #--suppressions="supression.supp"
+VFLAGS = --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes --suppressions=valgrind.supp
 CC = cc
 
 # libft
@@ -66,7 +66,7 @@ fclean: clean
 	@echo "$(RED)$(NAME)$(NC) cleaned!"
 
 v: re
-	valgrind $(VFLAGS) ./$(NAME) 
+	sudo valgrind $(VFLAGS) ./$(NAME) google.com
 
 fcount:
 	@echo "you wrote $(RED)$(shell cat $(SRCS) | wc -l)$(NC)lines of code"

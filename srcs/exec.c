@@ -20,15 +20,17 @@ int setup_ping(t_ping *ping, t_options *options) {
 	
 	ping->stats.packets_sent = 0;
 	ping->stats.packets_received = 0;
+	ping->stats.packets_dropped = 0;
 	ping->stats.min_rtt = 999999.0;
 	ping->stats.max_rtt = 0.0;
 	ping->stats.total_rtt = 0.0;
+	ping->stats.end_time.tv_sec = 0;
 	gettimeofday(&ping->stats.start_time, NULL);
-	
-	if (resolve_address(ping) < 0) 
+
+	if (resolve_address(ping, options) < 0)
 		return -1;
 	
-	ping->sockfd = create_icmp_socket(options->interval, options->timeout);
+	ping->sockfd = create_icmp_socket(options->interval, options->timeout, options->ttl);
 	if (ping->sockfd < 0)
 		return -1; 
 	
@@ -38,13 +40,14 @@ int setup_ping(t_ping *ping, t_options *options) {
 void print_statistics_exit(t_ping *ping) {
 	struct timeval now;
 	gettimeofday(&now, NULL);
-	long total_time_ms = (now.tv_sec - ping->stats.start_time.tv_sec) * 1000 + (now.tv_usec - ping->stats.start_time.tv_usec) / 1000;
-
+	if (ping->stats.end_time.tv_sec == 0)
+		ping->stats.end_time = now;
+	long total_time_ms = (ping->stats.end_time.tv_sec - ping->stats.start_time.tv_sec) * 1000 + (ping->stats.end_time.tv_usec - ping->stats.start_time.tv_usec) / 1000;
 	double packet_loss = 0.0;
 	if (ping->stats.packets_sent > 0) {
 		packet_loss = ((double)(ping->stats.packets_sent - ping->stats.packets_received) / ping->stats.packets_sent) * 100.0;
 	}
-	printf("--- %s ft_ping statistics ---\n", ping->ip_address);
+	printf("\n--- %s ft_ping statistics ---\n", ping->ip_address);
 	printf("%d packets transmitted, %d received, %.0f%% packet loss, time %ldms\n",
 	       ping->stats.packets_sent, ping->stats.packets_received, packet_loss, total_time_ms);
 
@@ -82,7 +85,7 @@ int check_running(t_ping *ping, t_options *options)
 {
 	if (!g_ping_running)
 		return 0;
-	
+
 	struct timeval now;
 	gettimeofday(&now, NULL);
 	long elapsed_sec = now.tv_sec - ping->stats.start_time.tv_sec;
@@ -102,7 +105,7 @@ int check_running(t_ping *ping, t_options *options)
 		if (grace_elapsed >= grace_period_ms) {
 			return 0;
 		}
-		if (ping->stats.packets_received >= ping->stats.packets_sent) {
+		if (ping->stats.packets_received + ping->stats.packets_dropped >= ping->stats.packets_sent) {
 			return 0;
 		}
 	}

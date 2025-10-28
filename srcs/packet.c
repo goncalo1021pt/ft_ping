@@ -97,8 +97,30 @@ void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
 	}
 
 	t_icmp_header *icmp_header = (t_icmp_header *)(buf + ip_header_len);
+	
+	if (icmp_header->type == ICMP_TIME_EXCEEDED) {
+		char src_ip[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(src_addr.sin_addr), src_ip, INET_ADDRSTRLEN);
+		char* hostname_info = get_hostname_from_ip(&src_addr, options->numeric);
+		printf("From %s icmp_seq=%u Time to live exceeded\n", hostname_info, ping->sequence - 1);
+		ping->stats.packets_dropped++;
+		return;
+	}
+	
+	if (icmp_header->type == ICMP_DEST_UNREACH) {
+		char src_ip[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(src_addr.sin_addr), src_ip, INET_ADDRSTRLEN);
+		char* hostname_info = get_hostname_from_ip(&src_addr, options->numeric);
+		printf("From %s icmp_seq=%u Destination unreachable\n", hostname_info, ping->sequence - 1);
+		ping->stats.packets_dropped++;
+		return;
+	}
+	
 	if (icmp_header->type != ICMP_ECHOREPLY) {
-		printf("ft_ping: received ICMP type %d (not echo reply)\n", icmp_header->type);
+		char src_ip[INET_ADDRSTRLEN];
+		inet_ntop(AF_INET, &(src_addr.sin_addr), src_ip, INET_ADDRSTRLEN);
+		char* hostname_info = get_hostname_from_ip(&src_addr, options->numeric);
+		printf("From %s icmp_seq=%u Type %d received\n", hostname_info, ping->sequence - 1, icmp_header->type);
 		return;
 	}
 
@@ -138,6 +160,11 @@ void resolve_packet(t_ping *ping, t_options *options) {
 	create_icmp_packet(&packet, ping->identifier, ping->sequence);
 	ping->sequence++;
 	send_packet(ping, &packet);
+	if (options->count != -1 && ping->stats.packets_sent >= options->count) {
+		struct timeval now;
+		gettimeofday(&now, NULL);
+		ping->stats.end_time = now;
+	}
 }
 
 void debug_packet(t_ping_packet *packet) {

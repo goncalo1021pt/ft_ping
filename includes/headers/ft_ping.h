@@ -1,6 +1,7 @@
 #ifndef FT_PING_H
 #define FT_PING_H
 
+#define _GNU_SOURCE
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdio.h>
@@ -49,6 +50,7 @@ typedef struct s_ping_stats
 {
 	int packets_sent;
 	int packets_received;
+	int packets_dropped;
 	double min_rtt;
 	double max_rtt;
 	double total_rtt;
@@ -110,9 +112,9 @@ void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options);
 void send_packet(t_ping *ping, t_ping_packet *packet);
 
 // socket.c
-int create_icmp_socket(float interval, int timeout);
+int create_icmp_socket(float interval, int timeout, int ttl);
 void close_ping_socket(int sockfd);
-int resolve_address(t_ping *ping);
+int resolve_address(t_ping *ping, t_options *options);
 
 // exec.c
 void print_statistics();
