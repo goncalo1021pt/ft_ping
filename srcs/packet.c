@@ -1,5 +1,20 @@
 #include "ft_ping.h"
 
+char* get_hostname_from_ip(struct sockaddr_in *addr, bool numeric) {
+	static char hostname[NI_MAXHOST];
+	static char ip_str[INET_ADDRSTRLEN];
+	
+	inet_ntop(AF_INET, &(addr->sin_addr), ip_str, INET_ADDRSTRLEN);
+	int result = getnameinfo((struct sockaddr*)addr, sizeof(*addr), hostname, sizeof(hostname), NULL, 0, 0);
+	if (result == 0 && strcmp(hostname, ip_str) != 0 && !numeric) {
+		static char formatted[NI_MAXHOST + INET_ADDRSTRLEN + 10];
+		snprintf(formatted, sizeof(formatted), "%s (%s)", hostname, ip_str);
+		return formatted;
+	} else {
+		return ip_str;
+	}
+}
+
 uint16_t calculate_checksum(void *data, int length) {
 	uint16_t *buffer = (uint16_t *)data;
 	uint32_t sum = 0;
@@ -45,7 +60,7 @@ void send_packet(t_ping *ping, t_ping_packet *packet) {
 	ping->stats.packets_sent++;
 }
 
-void recv_packet(t_ping *ping, t_ping_packet *packet) {
+void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
 	(void)packet;
 	ssize_t bytes_received;
 	struct sockaddr_in src_addr;
@@ -108,7 +123,10 @@ void recv_packet(t_ping *ping, t_ping_packet *packet) {
 		char src_ip[INET_ADDRSTRLEN];
 		inet_ntop(AF_INET, &(src_addr.sin_addr), src_ip, INET_ADDRSTRLEN);
 		ping->stats.packets_received++;
-		printf("%zd bytes from %s: icmp_seq=%u ttl=%d time=%.1f ms\n", bytes_received - ip_header_len, src_ip, recv_seq, ip_header->ttl, rtt);
+		
+		char* hostname_info = get_hostname_from_ip(&src_addr, options->numeric);
+		printf("%zd bytes from %s: icmp_seq=%u ttl=%d time=%.1f ms\n", 
+		       bytes_received - ip_header_len, hostname_info, recv_seq, ip_header->ttl, rtt);
 	} else
 		printf("ft_ping: packet too small for timestamp payload\n");
 }

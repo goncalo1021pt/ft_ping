@@ -1,5 +1,5 @@
 #ifndef FT_PING_H
-# define FT_PING_H
+#define FT_PING_H
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -106,7 +106,7 @@ uint16_t calculate_checksum(void *data, int length);
 void packet_setup(t_ping *ping, t_options *options);
 void debug_packet(t_ping_packet *packet);
 void resolve_packet(t_ping *ping, t_options *options);
-void recv_packet(t_ping *ping, t_ping_packet *packet);
+void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options);
 void send_packet(t_ping *ping, t_ping_packet *packet);
 
 // socket.c

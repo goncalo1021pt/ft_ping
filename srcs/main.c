@@ -9,13 +9,12 @@ int main(int argc, char **argv)
 	initialize_program(&options, &ping);
 	exit_code = parse_options(argc, argv, &ping, &options);
 	if (exit_code == 1) {
-		return 1;
+		return 2;
 	}
 	if (options.help || exit_code == 2) {
 		if (options.help)
 			print_help();
 		return 2;
 	}
-	// print_options(&options);
 	return exec_ping(&ping, &options);
 }

@@ -44,7 +44,7 @@ void print_statistics_exit(t_ping *ping) {
 	if (ping->stats.packets_sent > 0) {
 		packet_loss = ((double)(ping->stats.packets_sent - ping->stats.packets_received) / ping->stats.packets_sent) * 100.0;
 	}
-	printf("--- %s ping statistics ---\n", ping->ip_address);
+	printf("--- %s ft_ping statistics ---\n", ping->ip_address);
 	printf("%d packets transmitted, %d received, %.0f%% packet loss, time %ldms\n",
 	       ping->stats.packets_sent, ping->stats.packets_received, packet_loss, total_time_ms);
 
@@ -80,42 +80,59 @@ static void setup_poll_socket(struct pollfd *fds, int sockfd) {
 
 int check_running(t_ping *ping, t_options *options)
 {
-	if ((options->count != -1 && ping->stats.packets_received >= options->count))
+	if (!g_ping_running)
 		return 0;
+	
 	struct timeval now;
 	gettimeofday(&now, NULL);
 	long elapsed_sec = now.tv_sec - ping->stats.start_time.tv_sec;
+	
 	if (options->deadline > 0 && elapsed_sec >= options->deadline)
 		return 0;
-	if (!g_ping_running)
-		return 0;
+	
+	if (options->count != -1 && ping->stats.packets_sent >= options->count) {
+		if (ping->stats.end_time.tv_sec == 0)
+			gettimeofday(&ping->stats.end_time, NULL);
+		long grace_elapsed = (now.tv_sec - ping->stats.end_time.tv_sec) * 1000 + (now.tv_usec - ping->stats.end_time.tv_usec) / 1000;
+
+		long grace_period_ms = (long)(options->interval * 1000);
+		if (grace_period_ms < 3000) grace_period_ms = 3000;
+		if (grace_period_ms > 10000) grace_period_ms = 10000;
+		
+		if (grace_elapsed >= grace_period_ms) {
+			return 0;
+		}
+		if (ping->stats.packets_received >= ping->stats.packets_sent) {
+			return 0;
+		}
+	}
+	
 	return 1;
 }
 
 int start_ping_loop(t_ping *ping, t_options *options) {
 	resolve_packet(ping, options);
 	set_interval_timer(options->interval);
-	
 	struct pollfd fds[1];
 	setup_poll_socket(fds, ping->sockfd);
-	
-	while (check_running(ping, options)) {
-		int poll_result = poll(fds, 1, 100);
-		
+	do {
+		int poll_result = poll(fds, 1, options->timeout);
 		if (poll_result > 0 && (fds[0].revents & POLLIN)) {
 			t_ping_packet packet;
-			recv_packet(ping, &packet);
+			recv_packet(ping, &packet, options);
 		}
-		if (g_alarm_received && g_ping_running) {
+		if (g_alarm_received) {
 			g_alarm_received = false;
-			resolve_packet(ping, options);
-			set_interval_timer(options->interval);
+			if (options->count == -1 || ping->stats.packets_sent < options->count) {
+				resolve_packet(ping, options);
+				set_interval_timer(options->interval);
+			} else 
+				set_interval_timer(0);
 		} else if (g_statistics_requested) {
 			g_statistics_requested = false;
 			print_statistics(ping);
 		}
-	}
-	
+	} while (check_running(ping, options));
 	set_interval_timer(0);
 	return 0;
 }

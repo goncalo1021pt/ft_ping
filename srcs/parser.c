@@ -11,7 +11,7 @@ void initialize_program(t_options *options, t_ping *ping) {
 	options->numeric = false;
 	
 	options->deadline = 0;
-	options->timeout = 0;
+	options->timeout = 100;
 	
 	options->pattern = NULL;
 	options->packet_size = 64;
@@ -104,6 +104,8 @@ int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 					options->help = true;
 					return 2;
 				}
+				if (options->interval < 0.02)
+					options->interval = 0.02;
 				break;
 			case 'h':
 				options->help = true;
@@ -181,6 +183,7 @@ int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 	}
 	
 	if (optind >= argc) {
+		fprintf(stderr, "ft_ping: usage error: Destination address required\n");
 		return 1; 
 	}
 	ping->ip_address = argv[optind];
