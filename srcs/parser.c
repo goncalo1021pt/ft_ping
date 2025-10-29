@@ -7,9 +7,9 @@ void initialize_program(t_options *options, t_ping *ping) {
 	options->help = false;
 	
 	options->flood = false;
-	options->preload = 0;
+	options->preload = 1;
 	options->numeric = false;
-	
+
 	options->deadline = 0;
 	options->timeout = 100;
 	
@@ -117,9 +117,13 @@ int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 				options->flood = true;
 				break;
 			case 'l':
+				if (ft_strspn(optarg, "0123456789") != strlen(optarg) || strlen(optarg) == 0) {
+					fprintf(stderr, "ft_ping: invalid argument: '%s'\n", optarg);
+					return 2;
+				}
 				options->preload = atoi(optarg);
-				if (options->preload < 0) {
-					fprintf(stderr, "ft_ping: preload must be non-negative\n");
+				if (options->preload < 1 || options->preload > 65536) {
+					fprintf(stderr, "ft_ping: invalid argument: '%d' out of range: 1 <= value <= 65536\n", options->preload);
 					return 2;
 				}
 				break;

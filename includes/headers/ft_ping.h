@@ -56,6 +56,7 @@ typedef struct s_ping_stats
 	double total_rtt;
 	struct timeval start_time;
 	struct timeval end_time;
+	struct timeval last_send_time;
 } t_ping_stats;
 
 typedef struct s_options
@@ -109,10 +110,10 @@ void packet_setup(t_ping *ping, t_options *options);
 void debug_packet(t_ping_packet *packet);
 void resolve_packet(t_ping *ping, t_options *options);
 void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options);
-void send_packet(t_ping *ping, t_ping_packet *packet);
+void send_packet(t_ping *ping, t_ping_packet *packet, t_options *options);
 
 // socket.c
-int create_icmp_socket(float interval, int timeout, int ttl);
+int create_icmp_socket(float interval, int timeout, int ttl, t_options *options);
 void close_ping_socket(int sockfd);
 int resolve_address(t_ping *ping, t_options *options);
 

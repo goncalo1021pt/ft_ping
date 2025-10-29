@@ -17,6 +17,7 @@ int setup_ping(t_ping *ping, t_options *options) {
 
 	ping->identifier = getpid();
 	ping->sequence = 1;
+
 	
 	ping->stats.packets_sent = 0;
 	ping->stats.packets_received = 0;
@@ -25,12 +26,16 @@ int setup_ping(t_ping *ping, t_options *options) {
 	ping->stats.max_rtt = 0.0;
 	ping->stats.total_rtt = 0.0;
 	ping->stats.end_time.tv_sec = 0;
+	ping->stats.last_send_time.tv_sec = 0;
 	gettimeofday(&ping->stats.start_time, NULL);
+
+	if (options->verbose)
+		printf("ping: sock4.fd: 3 (socktype: SOCK_RAW), hints.ai_family: AF_INET\n");
 
 	if (resolve_address(ping, options) < 0)
 		return -1;
 	
-	ping->sockfd = create_icmp_socket(options->interval, options->timeout, options->ttl);
+	ping->sockfd = create_icmp_socket(options->interval, options->timeout, options->ttl, options);
 	if (ping->sockfd < 0)
 		return -1; 
 	
@@ -113,8 +118,19 @@ int check_running(t_ping *ping, t_options *options)
 	return 1;
 }
 
+void preload_packets(t_ping *ping, t_options *options) {
+	if (options->preload <= 0)
+		return;
+	
+	for (int i = 0; i < options->preload; i++) {
+		if (options->count != -1 && ping->stats.packets_sent >= options->count)
+			break;
+		resolve_packet(ping, options);
+	}
+}
+
 int start_ping_loop(t_ping *ping, t_options *options) {
-	resolve_packet(ping, options);
+	preload_packets(ping, options);
 	set_interval_timer(options->interval);
 	struct pollfd fds[1];
 	setup_poll_socket(fds, ping->sockfd);

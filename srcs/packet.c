@@ -47,7 +47,9 @@ void create_icmp_packet(t_ping_packet *packet, uint16_t identifier, uint16_t seq
 	packet->header.checksum = calculate_checksum(packet, sizeof(t_ping_packet));
 }
 
-void send_packet(t_ping *ping, t_ping_packet *packet) {
+void send_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
+	(void)options; // Remove verbose output from packet sending
+	
 	ssize_t bytes_sent;
 	bytes_sent = sendto(ping->sockfd, packet, sizeof(t_ping_packet), 0, (struct sockaddr*)&ping->dest_addr, sizeof(ping->dest_addr));
 	if (bytes_sent < 0) {
@@ -58,6 +60,7 @@ void send_packet(t_ping *ping, t_ping_packet *packet) {
 		printf("ft_ping: Warning - only sent %zd of %zu bytes\n",  bytes_sent, sizeof(t_ping_packet));
 
 	ping->stats.packets_sent++;
+	gettimeofday(&ping->stats.last_send_time, NULL);
 }
 
 void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
@@ -131,11 +134,13 @@ void recv_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
 	}
 
 	uint16_t recv_seq = ntohs(icmp_header->sequence);
+	
 	if (bytes_received >= ip_header_len + (int)sizeof(t_icmp_header) + (int)sizeof(struct timeval)) {
 		struct timeval *sent_time = (struct timeval *)(buf + ip_header_len + sizeof(t_icmp_header));
 		struct timeval now;
 		gettimeofday(&now, NULL);
 		double rtt = (now.tv_sec - sent_time->tv_sec) * 1000.0 + (now.tv_usec - sent_time->tv_usec) / 1000.0;
+		
 		ping->stats.total_rtt += rtt;
 		if (rtt < ping->stats.min_rtt)
 			ping->stats.min_rtt = rtt;
@@ -159,7 +164,7 @@ void resolve_packet(t_ping *ping, t_options *options) {
 
 	create_icmp_packet(&packet, ping->identifier, ping->sequence);
 	ping->sequence++;
-	send_packet(ping, &packet);
+	send_packet(ping, &packet, options);
 	if (options->count != -1 && ping->stats.packets_sent >= options->count) {
 		struct timeval now;
 		gettimeofday(&now, NULL);

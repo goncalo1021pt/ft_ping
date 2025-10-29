@@ -1,6 +1,7 @@
 #include "ft_ping.h"
 
-int create_icmp_socket(float interval, int timeout, int ttl) {
+int create_icmp_socket(float interval, int timeout, int ttl, t_options *options) {
+	(void)options;
 	int sockfd;
 
 	sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
@@ -68,10 +69,14 @@ int resolve_address(t_ping *ping, t_options *options) {
 	
 	if (inet_aton(ping->ip_address, &ping->dest_addr.sin_addr) != 0) {
 		ping->hostname = ping->ip_address;
+		if (options->verbose) {
+			printf("\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->ip_address);
+		}
 		printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, ping->ip_address, DATA_SIZE, PACKET_SIZE + 20);
 		options->numeric = true;
 		return 0;
 	}
+	
 	memset(&hints, 0, sizeof(hints));
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_RAW;
@@ -84,6 +89,11 @@ int resolve_address(t_ping *ping, t_options *options) {
 	struct sockaddr_in *addr_in = (struct sockaddr_in *)result->ai_addr;
 	memcpy(&ping->dest_addr.sin_addr, &addr_in->sin_addr, sizeof(ping->dest_addr.sin_addr));
 	ping->hostname = ping->ip_address;
+	
+	if (options->verbose) {
+		printf("\nai->ai_family: AF_INET, ai->ai_canonname: '%s'\n", ping->ip_address);
+	}
+	
 	printf("PING %s (%s) %d(%d) bytes of data.\n", ping->hostname, inet_ntoa(ping->dest_addr.sin_addr), DATA_SIZE, PACKET_SIZE + 20);
 	freeaddrinfo(result);
 	return 0;
