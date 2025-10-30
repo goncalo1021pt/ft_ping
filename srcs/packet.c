@@ -48,7 +48,7 @@ void create_icmp_packet(t_ping_packet *packet, uint16_t identifier, uint16_t seq
 }
 
 void send_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
-	(void)options; // Remove verbose output from packet sending
+	(void)options;
 	
 	ssize_t bytes_sent;
 	bytes_sent = sendto(ping->sockfd, packet, sizeof(t_ping_packet), 0, (struct sockaddr*)&ping->dest_addr, sizeof(ping->dest_addr));

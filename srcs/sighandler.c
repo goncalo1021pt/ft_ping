@@ -11,7 +11,7 @@ void signal_handler(int signal, siginfo_t *info, void *context)
 	if (signal == SIGINT)
 	{
 		g_ping_running = false; 
-		write(STDOUT_FILENO, "^C\n", 3);
+		write(STDOUT_FILENO, "^C", 3);
 	}
 	else if (signal == SIGQUIT)
 	{

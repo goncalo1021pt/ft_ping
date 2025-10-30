@@ -17,4 +17,4 @@ int main(int argc, char **argv)
 		return 2;
 	}
 	return exec_ping(&ping, &options);
-}
+}	

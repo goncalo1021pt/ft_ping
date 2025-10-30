@@ -16,7 +16,6 @@ void initialize_program(t_options *options, t_ping *ping) {
 	options->pattern = NULL;
 	options->packet_size = 64;
 	
-	options->bypass_route = false;
 	options->timestamp_type = 0;
 	options->ttl = 64;
 	options->ip_timestamp = false;
@@ -46,7 +45,6 @@ void print_options(t_options *options) {
 	printf("  Packet size: %d bytes\n", options->packet_size);
 	
 	printf("Advanced:\n");
-	printf("  Bypass route: %s\n", options->bypass_route ? "true" : "false");
 	printf("  Timestamp type: %d\n", options->timestamp_type);
 	printf("  TTL: %d\n", options->ttl);
 	printf("===================\n");
@@ -64,7 +62,6 @@ void print_help() {
 	printf("  -l <preload>       send <preload> number of packages while waiting replies\n");
 	printf("  -n                 no dns name resolution\n");
 	printf("  -p <pattern>       contents of padding byte\n");
-	printf("  -r                 bypass routing table\n");
 	printf("  -s <size>          use <size> as number of data bytes to be sent\n");
 	printf("  -t <ttl>           define time to live\n");
 	printf("  -v                 verbose output\n");
@@ -131,10 +128,7 @@ int parse_options(int argc, char **argv, t_ping *ping, t_options *options) {
 				options->numeric = true;
 				break;
 			case 'p':
-				options->pattern = optarg;
-				break;
-			case 'r':
-				options->bypass_route = true;
+				options->pattern = optarg;	
 				break;
 			case 's':
 				options->packet_size = atoi(optarg);

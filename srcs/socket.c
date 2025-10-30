@@ -15,7 +15,6 @@ int create_icmp_socket(float interval, int timeout, int ttl, t_options *options)
 		}
 		return -1;
 	}
-
 	if (setsockopt(sockfd, IPPROTO_IP, IP_TTL, &ttl, sizeof(ttl)) == -1) {
 		perror("ft_ping: setsockopt IP_TTL");
 		close(sockfd);

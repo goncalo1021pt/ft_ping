@@ -76,7 +76,6 @@ typedef struct s_options
 	char *pattern;
 	int packet_size;
 	
-	bool bypass_route;
 	int timestamp_type;
 	int ttl;
 	bool ip_timestamp;
