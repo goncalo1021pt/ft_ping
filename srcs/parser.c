@@ -11,7 +11,7 @@ void initialize_program(t_options *options, t_ping *ping) {
 	options->numeric = false;
 
 	options->deadline = 0;
-	options->timeout = 100;
+	options->timeout = -1;
 	
 	options->pattern = NULL;
 	options->packet_size = 64;

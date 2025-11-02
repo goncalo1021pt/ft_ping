@@ -53,7 +53,6 @@ void send_packet(t_ping *ping, t_ping_packet *packet, t_options *options) {
 	ssize_t bytes_sent;
 	bytes_sent = sendto(ping->sockfd, packet, sizeof(t_ping_packet), 0, (struct sockaddr*)&ping->dest_addr, sizeof(ping->dest_addr));
 	if (bytes_sent < 0) {
-		perror("ft_ping: sendto failed");
 		return;
 	}
 	if (bytes_sent != sizeof(t_ping_packet))
@@ -162,6 +161,10 @@ void resolve_packet(t_ping *ping, t_options *options) {
 	(void)options;
 	t_ping_packet packet;
 
+	if (options->count != -1 && ping->sequence > options->count) {
+		g_ping_running = false;
+		return;
+	}
 	create_icmp_packet(&packet, ping->identifier, ping->sequence);
 	ping->sequence++;
 	send_packet(ping, &packet, options);
