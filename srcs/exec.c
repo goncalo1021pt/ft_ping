@@ -104,7 +104,7 @@ int check_running(t_ping *ping, t_options *options)
 		long grace_elapsed = (now.tv_sec - ping->stats.end_time.tv_sec) * 1000 + (now.tv_usec - ping->stats.end_time.tv_usec) / 1000;
 
 		long grace_period_ms = (long)(options->interval * 1000);
-		if (grace_period_ms < 3000) grace_period_ms = 3000;
+		if (grace_period_ms < 1000) grace_period_ms = 1000;
 		if (grace_period_ms > 10000) grace_period_ms = 10000;
 		
 		if (grace_elapsed >= grace_period_ms) {
@@ -134,6 +134,7 @@ int start_ping_loop(t_ping *ping, t_options *options) {
 	set_interval_timer(options->interval);
 	struct pollfd fds[1];
 	setup_poll_socket(fds, ping->sockfd);
+	
 	do {
 		int poll_result = poll(fds, 1, options->timeout);
 		if (poll_result > 0 && (fds[0].revents & POLLIN)) {
