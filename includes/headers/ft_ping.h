@@ -66,19 +66,13 @@ typedef struct s_options
 	bool verbose;
 	bool help;
 	
-	bool flood;
 	int preload;
 	bool numeric;
 	
 	int deadline;
 	int timeout;
 	
-	char *pattern;
-	int packet_size;
-	
-	int timestamp_type;
 	int ttl;
-	bool ip_timestamp;
 } t_options;
 
 typedef struct s_ping
